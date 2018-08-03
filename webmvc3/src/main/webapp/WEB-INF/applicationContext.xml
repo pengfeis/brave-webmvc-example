@@ -47,4 +47,6 @@
   <bean id="httpTracing" class="brave.spring.beans.HttpTracingFactoryBean">
     <property name="tracing" ref="tracing"/>
   </bean>
+
+
 </beans>

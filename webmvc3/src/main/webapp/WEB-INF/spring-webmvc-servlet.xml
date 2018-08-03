@@ -25,4 +25,17 @@
   <!-- Loads the controller -->
   <context:component-scan base-package="brave.webmvc"/>
   <mvc:annotation-driven/>
+
+  <!--provider-->
+  <bean name="/say.hessian" class="org.springframework.remoting.caucho.HessianServiceExporter">
+    <property name="service" ref="speakerService"/>
+    <property name="serviceInterface" value="brave.webmvc.hessian.SpeakerService"/>
+  </bean>
+
+  <!--client-->
+  <bean id="clientSayService" class="brave.webmvc.support.BraveHessianProxyFactoryBean">
+    <property name="serviceUrl" value="http://localhost:9001/say.hessian"/>
+    <property name="serviceInterface"
+              value="brave.webmvc.hessian.SpeakerService"/>
+  </bean>
 </beans>
