@@ -3,6 +3,7 @@ package brave.webmvc.support;
 import brave.Span;
 import brave.Tracer;
 import brave.Tracing;
+import okhttp3.Request;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.remoting.caucho.HessianProxyFactoryBean;
 import zipkin2.Endpoint;
@@ -16,11 +17,12 @@ public class BraveHessianProxyFactoryBean extends HessianProxyFactoryBean {
     public Object invoke(MethodInvocation invocation) throws Throwable {
 
         Tracer tracer = Tracing.currentTracer();
-        Span span = tracer.nextSpan().name(this.getServiceUrl()).kind(Span.Kind.CLIENT);
+        Span span = tracer.nextSpan().name("hessian").kind(Span.Kind.CLIENT);
         span.tag("v", "1.00");
-        span.remoteEndpoint(Endpoint.newBuilder().serviceName("hessian").ip("127.0.0.1").port(9001).build());
-
+        span.remoteEndpoint(Endpoint.newBuilder().serviceName(invocation.getMethod().getName()).build());
         span.start();
+        Tracing.current().propagation().injector(Request.Builder::addHeader);
+
         Object invoke = null;
         try {
             invoke = super.invoke(invocation);
@@ -29,7 +31,7 @@ public class BraveHessianProxyFactoryBean extends HessianProxyFactoryBean {
             span.tag("error", "444");
 
         } finally {
-        // when the response is complete, finish the span
+            // when the response is complete, finish the span
             span.finish();
         }
 
