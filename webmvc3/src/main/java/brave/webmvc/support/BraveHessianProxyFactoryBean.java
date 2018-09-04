@@ -3,7 +3,6 @@ package brave.webmvc.support;
 import brave.Span;
 import brave.Tracer;
 import brave.Tracing;
-import okhttp3.Request;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.remoting.caucho.HessianProxyFactoryBean;
 import zipkin2.Endpoint;
@@ -13,6 +12,13 @@ import zipkin2.Endpoint;
  */
 public class BraveHessianProxyFactoryBean extends HessianProxyFactoryBean {
 
+    protected BraveHessianProxyFactory proxyFactory = new BraveHessianProxyFactory();
+
+    public BraveHessianProxyFactoryBean() {
+        super();
+        super.setProxyFactory(proxyFactory);
+    }
+
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
 
@@ -21,7 +27,6 @@ public class BraveHessianProxyFactoryBean extends HessianProxyFactoryBean {
         span.tag("v", "1.00");
         span.remoteEndpoint(Endpoint.newBuilder().serviceName(invocation.getMethod().getName()).build());
         span.start();
-        Tracing.current().propagation().injector(Request.Builder::addHeader);
 
         Object invoke = null;
         try {
